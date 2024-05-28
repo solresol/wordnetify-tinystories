@@ -87,7 +87,7 @@ def update():
     compute_time = data['compute_time']
     model = data['model']
 
-    cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", resolved_synset, model, compute_time, word_id)
+    cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [resolved_synset, model, compute_time, word_id])
     conn.commit()
     
     result = {'message': 'done'}

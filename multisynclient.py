@@ -61,6 +61,8 @@ for word_obj in iterator:
     word_number = word_obj['word_number']
     word = word_obj['word']
     sentence = get_sentence(sentence_id)
+    if sentence is None:
+        sys.exit(f"Failed to get sentence #{sentence_id}")
 
     prompt = f"""Consider this sentence:
     {sentence}
