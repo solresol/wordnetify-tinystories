@@ -71,6 +71,9 @@ def create_schema(conn):
         word TEXT NOT NULL,
         synset_count INTEGER NOT NULL,
         resolved_synset TEXT,
+        resolving_model TEXT,
+        resolved_timestamp datetime,
+        resolution_compute_time FLOAT,
         FOREIGN KEY(sentence_id) REFERENCES sentences(id)
     );""")
     
