@@ -19,6 +19,8 @@ args = parser.parse_args()
 
 conn = sqlite3.connect(args.database)
 cursor = conn.cursor()
+cursor.execute("pragma busy_timeout = 30000;")
+cursor.execute("pragma journal_mode = WAL;")
 
 if (args.congruent is not None and args.modulo is None) or (args.congruent is None and args.modulo is not None):
     sys.exit("Must specify both --congruent and --modulo or neither")
