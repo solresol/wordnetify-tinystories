@@ -1,0 +1,6 @@
+isc_project_id = "3c79817f-e396-4d1b-8c1c-5c2f6f6d4405"
+experiment_name = "Resolve wordnet synsets (trial 2)"
+gpu_type = "24GB VRAM GPU"
+nnodes = 10
+output_path = "/root/outputs/resolve-synsets-trial-2"
+command = "cd /root/wordnetify-tinystories && . .venv/bin/activate && ( ollama serve & ) && ./resolve_multisynsets.py  --database /root/wordnetify-tinystories/database.sqlite --congruent $RANK --modulo 10 --limit 500"
