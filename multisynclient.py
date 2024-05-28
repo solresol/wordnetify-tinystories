@@ -17,15 +17,20 @@ parser.add_argument("--model", default="llama3", help="Which ollama model to use
 parser.add_argument("--show-conversation", action="store_true", help="Show the prompt and output from the language model")
 args = parser.parse_args()
 
+def get_server(target):
+    if ':' in args.server:
+        return f'http://[{args.server}]:5000/{target}'
+    else:
+        return f'http://{args.server}:5000/{target}'
+
 def get_unresolved_words():
-    url = f'http://{args.server}:5000/unresolved'
     params = {}
     if args.congruent is not None and args.modulo is not None:
         params['congruent'] = args.congruent
         params['modulo'] = args.modulo
     if args.limit is not None:
         params['limit'] = args.limit
-    r = requests.get(url, params=params)
+    r = requests.get(get_server('unresolved'), params=params)
     if r.status_code != 200:
         sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
     for word in r.json():
@@ -33,13 +38,13 @@ def get_unresolved_words():
 
 
 def get_sentence(sentence_id):
-    r = requests.get(f'http://{args.server}:5000/sentence', params={'sentence_id': sentence_id})
+    r = requests.get(get_server('sentence'), params={'sentence_id': sentence_id})
     if r.status_code != 200:
         sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
     return r.json()['sentence']
 
 def get_synsets(word_id):
-    r = requests.get(f'http://{args.server}:5000/synsets', params={'word_id': word_id})
+    r = requests.get(get_server('synsets'), params={'word_id': word_id})
     if r.status_code != 200:
         sys.exit(f"{r.status_code} error from {args.server}: {r.text}")    
     return r.json()
@@ -112,7 +117,7 @@ Answer in JSON format, with a key of "synset", e.g.
             pass
     compute_time = time.time() - starting_moment
 
-    r = requests.post(f'http://{args.server}:5000/update',
+    r = requests.post(get_server('update'),
                       json={'word_id': word_id,
                             'resolved_synset': answer['synset'],
                             'compute_time': compute_time,
