@@ -1,0 +1,6 @@
+isc_project_id = "3c79817f-e396-4d1b-8c1c-5c2f6f6d4405"
+experiment_name = "Wordnetify Validation Data"
+gpu_type = "24GB VRAM GPU"
+nnodes = 1
+output_path = "/root/outputs/wordnetify-validation"
+command = "cd /root/wordnetify-tinystories && . .venv/bin/activate && ./wordnetify.py --database /root/wordnetify-tinystories/database.sqlite --file TinyStoriesV2-GPT4-valid.txt"
