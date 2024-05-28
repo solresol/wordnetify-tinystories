@@ -105,5 +105,5 @@ Answer in JSON format, with a key of "synset", e.g.
         except:
             pass
     compute_time = time.time() - starting_moment
-    synset_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
+    synset_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
     conn.commit()
