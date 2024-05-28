@@ -37,40 +37,56 @@ if args.limit is not None:
     query += f" limit {args.limit}"
 
 cursor.execute(query)
+iterator = []
+for row in cursor:
+    iterator.append(row)
 
 if args.progress_bar:
     import tqdm
     if args.limit:
-        iterator = tqdm.tqdm(cursor, total=args.limit)
+        iterator = tqdm.tqdm(iterator, total=args.limit)
     else:
-        iterator = tqdm.tqdm(cursor)
-else:
-    iterator = cursor
+        iterator = tqdm.tqdm(iterator)
 
-synset_cursor = conn.cursor()
-sentence_cursor = conn.cursor()
 
-for (word_id, sentence_id, word_number, word) in iterator:
-    starting_moment = time.time()
+def get_sentence(sentence_id):
+    sentence_cursor = conn.cursor()
+    # if synset_cursor pragmas are redundant, then these are too
+    sentence_cursor.execute("pragma busy_timeout = 30000;")
+    sentence_cursor.execute("pragma journal_mode = WAL;")
     sentence_cursor.execute("select sentence from sentences where sentences.id = ?", [sentence_id])
     row = sentence_cursor.fetchone()
     if row is None:
-        sys.exit(f"Impossible condition: missing sentence #{sentence_id} encountered for word #{word_id}")
+        sys.exit(f"Impossible condition: missing sentence #{sentence_id}")
     sentence = row[0]
+    sentence_cursor.close()
+
+def get_synsets(word_id):
+    synset_cursor = conn.cursor()
+    # I don't know if this is necessary
+    synset_cursor.execute("pragma busy_timeout = 30000;")
+    synset_cursor.execute("pragma journal_mode = WAL;")
+    synset_cursor.execute("select synsets.id, description, examples from synsets join word_synsets on (synsets.id = synset_id) and word_id = ?", [word_id])
+    answer = []
+    for row in synset_cursor:
+        answer.append(row)
+    return answer
+
+
+for (word_id, sentence_id, word_number, word) in iterator:
+    starting_moment = time.time()
+    sentence = get_sentence(sentence_id)
 
     prompt = f"""Consider this sentence:
     {sentence}
 The word `{word}` (which is word #{word_number+1}) can have multiple meanings. Which of the following meanings is it being used for in this sentence?
 
 """
-
-    synset_cursor.execute("select synsets.id, description, examples from synsets join word_synsets on (synsets.id = synset_id) and word_id = ?", [word_id])
-    for (synset_id, description, examples) in synset_cursor:
+    for (synset_id, description, examples) in get_synsets(word_id):
         prompt += f" ({synset_id}) -- {description}"
         if examples is not None and examples.strip() != '':
             prompt += f"\n       Example use: {examples}"
         prompt += "\n\n"
-
     prompt += """ (other) -- none of those synsets match the word's meaning here
 
 
@@ -105,5 +121,8 @@ Answer in JSON format, with a key of "synset", e.g.
         except:
             pass
     compute_time = time.time() - starting_moment
-    synset_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
+
+    update_cursor = conn.cursor()
+    update_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
     conn.commit()
+    update_cursor.close()
