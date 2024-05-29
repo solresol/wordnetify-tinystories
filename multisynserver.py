@@ -94,6 +94,10 @@ def update():
     return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(threaded=False, processes=1, host='0.0.0.0')
+    import os
+    if 'MASTER_ADDR' in os.environ:
+       app.run(threaded=False, processes=1, host=os.environ['MASTER_ADDR'])
+    else:
+       app.run(threaded=False, processes=1, host='0.0.0.0')
 
 
