@@ -3,3 +3,4 @@ tqdm
 ollama
 flask
 requests
+backoff
