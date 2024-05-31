@@ -5,6 +5,7 @@ import json
 import requests
 import ollama
 import time
+import backoff
 
 import sys
 parser = argparse.ArgumentParser()
@@ -23,6 +24,9 @@ def get_server(target):
     else:
         return f'http://{args.server}:5000/{target}'
 
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_time=300)
 def get_unresolved_words():
     params = {}
     if args.congruent is not None and args.modulo is not None:
@@ -37,17 +41,33 @@ def get_unresolved_words():
         yield word
 
 
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_time=300)
 def get_sentence(sentence_id):
     r = requests.get(get_server('sentence'), params={'sentence_id': sentence_id})
     if r.status_code != 200:
         sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
     return r.json()['sentence']
 
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_time=300)
 def get_synsets(word_id):
     r = requests.get(get_server('synsets'), params={'word_id': word_id})
     if r.status_code != 200:
         sys.exit(f"{r.status_code} error from {args.server}: {r.text}")    
     return r.json()
+
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_time=300)
+def update(word_id, synset_id, compute_time, model):
+    r = requests.post(get_server('update'),
+                      json={'word_id': word_id,
+                            'resolved_synset': synset_id,
+                            'compute_time': compute_time,
+                            'model': model })
 
 
 if args.progress_bar:
@@ -116,9 +136,4 @@ Answer in JSON format, with a key of "synset", e.g.
         except:
             pass
     compute_time = time.time() - starting_moment
-
-    r = requests.post(get_server('update'),
-                      json={'word_id': word_id,
-                            'resolved_synset': answer['synset'],
-                            'compute_time': compute_time,
-                            'model': args.model })
+    update(word_id, answer['synset'], compute_time, args.model)
