@@ -1,6 +1,6 @@
 isc_project_id = "3c79817f-e396-4d1b-8c1c-5c2f6f6d4405"
-experiment_name = "Resolve wordnet synsets (IPv4 client-server version 10)"
+experiment_name = "Resolve wordnet synsets (IPv4 client-server version 11)"
 gpu_type = "24GB VRAM GPU"
 nnodes = 10
-output_path = "/root/outputs/resolve-synsets-trial-10"
+output_path = "/root/outputs/resolve-synsets-trial-11"
 command = "cd /root/wordnetify-tinystories && . .venv/bin/activate && ( ollama serve & ) && ( [ $RANK -ne 0 ] || MASTER_ADDR=192.168.5.66 ./multisynserver.py --database /root/wordnetify-tinystories/TinyStories.sqlite > $OUTPUT_PATH/master.txt 2> $OUTPUT_PATH/master.err & ) &&  sleep 15 && ./multisynclient.py --server 192.168.5.66  --congruent $RANK --modulo 10 --limit 500"
