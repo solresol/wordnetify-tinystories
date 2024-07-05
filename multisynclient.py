@@ -16,6 +16,8 @@ parser.add_argument("--limit", type=int, help="Stop after processing this many r
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
 parser.add_argument("--model", default="llama3", help="Which ollama model to use")
 parser.add_argument("--show-conversation", action="store_true", help="Show the prompt and output from the language model")
+parser.add_argument("--mild-logging", action="store_true", help="Show a few logs, just so that we know something is happening.")
+
 args = parser.parse_args()
 
 def get_server(target):
@@ -89,6 +91,9 @@ for word_obj in iterator:
     if sentence is None:
         sys.exit(f"Failed to get sentence #{sentence_id}")
 
+    if args.mild_logging:
+        sys.stderr.write(f"{time.asctime()} {word} (##{word_number+1}) {sentence}")
+
     prompt = f"""Consider this sentence:
     {sentence}
 The word `{word}` (which is word #{word_number+1}) can have multiple meanings. Which of the following meanings is it being used for in this sentence?
@@ -137,3 +142,8 @@ Answer in JSON format, with a key of "synset", e.g.
             pass
     compute_time = time.time() - starting_moment
     update(word_id, answer['synset'], compute_time, args.model)
+    if args.mild_logging:
+        sys.stderr.write(f": {answer['synset']}\n")
+
+if args.mild_logging:
+    sys.stderr.write(f"{time.asctime()} No more words to process.\n")
