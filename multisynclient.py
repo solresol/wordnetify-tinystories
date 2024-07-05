@@ -114,6 +114,11 @@ Answer in JSON format, with a key of "synset", e.g.
 {
     "synset": "foo.n.01"
 }
+
+or
+{
+    "synset": "(other)"
+}
     """
 
     if args.show_conversation:
@@ -141,9 +146,13 @@ Answer in JSON format, with a key of "synset", e.g.
         except:
             pass
     compute_time = time.time() - starting_moment
-    update(word_id, answer['synset'], compute_time, args.model)
-    if args.mild_logging:
-        sys.stderr.write(f": {answer['synset']}\n")
+    if synset in answer:
+        update(word_id, answer['synset'], compute_time, args.model)
+        if args.mild_logging:
+            sys.stderr.write(f": {answer['synset']}\n")
+    elif args.mild_logging:
+        sys.stderr.write(f": got an answer that doesn't make sense: {answer}\n")
+            
 
 if args.mild_logging:
     sys.stderr.write(f"{time.asctime()} No more words to process.\n")
