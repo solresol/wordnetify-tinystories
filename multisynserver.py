@@ -10,15 +10,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--database", required=True, help="Where the database is")
 args = parser.parse_args()
 
-conn = sqlite3.connect(args.database)
-
-
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
 @app.route('/unresolved', methods=['GET'])
 def unresolved():
+    conn = sqlite3.connect(args.database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -42,10 +40,13 @@ def unresolved():
                        'sentence_id': sentence_id,
                        'word_number': word_number,
                        'word': word})
+    cursor.close()
+    conn.close()
     return jsonify(answer)
 
 @app.route('/sentence', methods=['GET'])
 def sentence():
+    conn = sqlite3.connect(args.database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -59,10 +60,13 @@ def sentence():
         return jsonify({'error': 'Sentence ID not found'}), 404
     sentence = row[0]
     result = {'sentence': sentence }
+    cursor.close()
+    conn.close()
     return jsonify(result)
 
 @app.route('/synsets', methods=['GET'])
 def synsets():
+    conn = sqlite3.connect(args.database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -78,10 +82,13 @@ def synsets():
                        'description': description})
         if example is not None:
             answer[-1]['example'] = example
+    cursor.close()
+    conn.close()
     return jsonify(answer)
 
 @app.route('/update', methods=['POST'])
 def update():
+    conn = sqlite3.connect(args.database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -99,6 +106,8 @@ def update():
     conn.commit()
     
     result = {'message': 'done'}
+    cursor.close()
+    conn.close()
     return jsonify(result)
 
 if __name__ == '__main__':
