@@ -58,7 +58,7 @@ def get_sentence(sentence_id):
 def get_synsets(word_id):
     r = requests.get(get_server('synsets'), params={'word_id': word_id})
     if r.status_code != 200:
-        sys.exit(f"{r.status_code} error from {args.server}: {r.text}")    
+        sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
     return r.json()
 
 @backoff.on_exception(backoff.expo,
@@ -146,13 +146,13 @@ or
         except:
             pass
     compute_time = time.time() - starting_moment
-    if synset in answer:
+    if 'synset' in answer:
         update(word_id, answer['synset'], compute_time, args.model)
         if args.mild_logging:
             sys.stderr.write(f": {answer['synset']}\n")
     elif args.mild_logging:
         sys.stderr.write(f": got an answer that doesn't make sense: {answer}\n")
-            
+
 
 if args.mild_logging:
     sys.stderr.write(f"{time.asctime()} No more words to process.\n")
