@@ -11,10 +11,6 @@ parser.add_argument("--database", required=True, help="Where the database is")
 args = parser.parse_args()
 
 conn = sqlite3.connect(args.database)
-cursor = conn.cursor()
-cursor.execute("pragma busy_timeout = 30000;")
-cursor.execute("pragma journal_mode = WAL;")
-
 
 
 from flask import Flask, request, jsonify
@@ -23,6 +19,9 @@ app = Flask(__name__)
 
 @app.route('/unresolved', methods=['GET'])
 def unresolved():
+    cursor = conn.cursor()
+    cursor.execute("pragma busy_timeout = 30000;")
+    cursor.execute("pragma journal_mode = WAL;")
     congruent = request.args.get('congruent', default=None, type=int)
     modulo = request.args.get('modulo', default=None, type=int)
     limit = request.args.get('limit', default=None, type=int)
@@ -47,6 +46,9 @@ def unresolved():
 
 @app.route('/sentence', methods=['GET'])
 def sentence():
+    cursor = conn.cursor()
+    cursor.execute("pragma busy_timeout = 30000;")
+    cursor.execute("pragma journal_mode = WAL;")
     sentence_id = request.args.get('sentence_id', default=None, type=int)
     
     if sentence_id is None:
@@ -61,6 +63,9 @@ def sentence():
 
 @app.route('/synsets', methods=['GET'])
 def synsets():
+    cursor = conn.cursor()
+    cursor.execute("pragma busy_timeout = 30000;")
+    cursor.execute("pragma journal_mode = WAL;")
     word_id = request.args.get('word_id', default=None, type=int)
     
     if word_id is None:
@@ -77,6 +82,9 @@ def synsets():
 
 @app.route('/update', methods=['POST'])
 def update():
+    cursor = conn.cursor()
+    cursor.execute("pragma busy_timeout = 30000;")
+    cursor.execute("pragma journal_mode = WAL;")
     data = request.json
     
     if 'word_id' not in data or 'resolved_synset' not in data or 'compute_time' not in data:
@@ -96,8 +104,8 @@ def update():
 if __name__ == '__main__':
     import os
     if 'MASTER_ADDR' in os.environ:
-       app.run(threaded=False, processes=1, host=os.environ['MASTER_ADDR'])
+       app.run(host=os.environ['MASTER_ADDR'])
     else:
-       app.run(threaded=False, processes=1, host='0.0.0.0')
+       app.run(host='0.0.0.0')
 
 
