@@ -36,11 +36,15 @@ def get_unresolved_words():
         params['modulo'] = args.modulo
     if args.limit is not None:
         params['limit'] = args.limit
-    r = requests.get(get_server('unresolved'), params=params)
-    if r.status_code != 200:
-        sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
-    for word in r.json():
-        yield word
+    more_words = True
+    while more_words:
+        more_words = False
+        r = requests.get(get_server('unresolved'), params=params)
+        if r.status_code != 200:
+             sys.exit(f"{r.status_code} error from {args.server}: {r.text}")
+        for word in r.json():
+             more_words = True
+             yield word
 
 
 @backoff.on_exception(backoff.expo,
