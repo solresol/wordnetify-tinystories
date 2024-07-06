@@ -3,4 +3,4 @@ experiment_name = "Resolve wordnet synsets (production run 26 - phi3)"
 gpu_type = "24GB VRAM GPU"
 nnodes = 10
 output_path = "/root/outputs/resolve-synsets-production-26"
-command = "cd /root/wordnetify-tinystories && . .venv/bin/activate && ( ollama serve & ) && ( [ $RANK -ne 0 ] || ./multisynserver.py --database /root/wordnetify-tinystories/TinyStories.sqlite >> $OUTPUT_PATH/master.txt 2>> $OUTPUT_PATH/master.err & ) &&  sleep 15 && ./multisynclient.py --server $MASTER_ADDR  --congruent $RANK --modulo 10 --limit 500 --mild-logging --model phi3"
+command = "cd /root/wordnetify-tinystories && . .venv/bin/activate && ( ollama serve & ) && ( [ $RANK -ne 0 ] || DATABASE=/root/wordnetify-tinystories/TinyStories.sqlite gunicorn -w 10 -b 0.0.0.0:5000 multisynserver:app   >> $OUTPUT_PATH/master.txt 2>> $OUTPUT_PATH/master.err & ) &&  sleep 15 && ./multisynclient.py --server $MASTER_ADDR  --congruent $RANK --modulo 10 --limit 500 --mild-logging --model phi3"
