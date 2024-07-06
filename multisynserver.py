@@ -4,11 +4,16 @@ import argparse
 import json
 import sqlite3
 import time
+import os
 
 import sys
 parser = argparse.ArgumentParser()
-parser.add_argument("--database", required=True, help="Where the database is")
-args = parser.parse_args()
+if 'DATABASE' in os.environ:
+    database=os.environ['DATABASE']
+else:
+    parser.add_argument("--database", required=True, help="Where the database is")
+    args = parser.parse_args()
+    database = args.database
 
 from flask import Flask, request, jsonify
 
@@ -16,7 +21,7 @@ app = Flask(__name__)
 
 @app.route('/unresolved', methods=['GET'])
 def unresolved():
-    conn = sqlite3.connect(args.database)
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -46,7 +51,7 @@ def unresolved():
 
 @app.route('/sentence', methods=['GET'])
 def sentence():
-    conn = sqlite3.connect(args.database)
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -66,7 +71,7 @@ def sentence():
 
 @app.route('/synsets', methods=['GET'])
 def synsets():
-    conn = sqlite3.connect(args.database)
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")
@@ -88,7 +93,7 @@ def synsets():
 
 @app.route('/update', methods=['POST'])
 def update():
-    conn = sqlite3.connect(args.database)
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
     cursor.execute("pragma busy_timeout = 30000;")
     cursor.execute("pragma journal_mode = WAL;")

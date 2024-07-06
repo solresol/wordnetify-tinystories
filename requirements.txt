@@ -4,3 +4,4 @@ ollama
 flask
 requests
 backoff
+gunicorn
