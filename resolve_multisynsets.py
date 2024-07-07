@@ -5,6 +5,7 @@ import json
 import sqlite3
 import ollama
 import time
+import signal
 
 import sys
 parser = argparse.ArgumentParser()
@@ -13,7 +14,7 @@ parser.add_argument("--congruent", type=int, help="Only process rows with ids th
 parser.add_argument("--modulo", type=int, help="Only process rows with ids that are congruent to --congruent modulo this number")
 parser.add_argument("--limit", type=int, help="Stop after processing this many rows")
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
-parser.add_argument("--model", default="llama3", help="Which ollama model to use")
+parser.add_argument("--model", default="phi3", help="Which ollama model to use")
 parser.add_argument("--show-conversation", action="store_true", help="Show the prompt and output from the language model")
 args = parser.parse_args()
 
@@ -72,6 +73,13 @@ def get_synsets(word_id):
         answer.append(row)
     return answer
 
+need_to_stop_now = False
+
+def handle_interruption(signum, frame):
+    global need_to_stop_now
+    need_to_stop_now = True
+
+signal.signal(signal.SIGTERM, handle_interruption)
 
 for (word_id, sentence_id, word_number, word) in iterator:
     starting_moment = time.time()
@@ -94,6 +102,12 @@ Answer in JSON format, with a key of "synset", e.g.
 
 {
     "synset": "foo.n.01"
+}
+
+    or
+
+{
+    "synset": "(other)"
 }
     """
 
@@ -122,7 +136,10 @@ Answer in JSON format, with a key of "synset", e.g.
             pass
     compute_time = time.time() - starting_moment
 
-    update_cursor = conn.cursor()
-    update_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
-    conn.commit()
-    update_cursor.close()
+    if 'synset' in answer:
+        update_cursor = conn.cursor()
+        update_cursor.execute("update words set resolved_synset = ?, resolving_model=?, resolved_timestamp = current_timestamp, resolution_compute_time=? where id = ?", [answer['synset'], args.model, compute_time, word_id])
+        conn.commit()
+        update_cursor.close()
+    if need_to_stop_now:
+        sys.exit(0)
