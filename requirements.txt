@@ -5,3 +5,4 @@ flask
 requests
 backoff
 gunicorn
+groq
