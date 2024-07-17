@@ -21,6 +21,7 @@ parser.add_argument("--show-conversation", action="store_true", help="Show the p
 parser.add_argument("--groq-key", default=os.path.expanduser('~/.groq.key'), 
      help="Where to find the groq key (if groq is being used)")
 parser.add_argument("--use-groq", action="store_true", help="Call out to groq instead of using a local ollama-based model")
+parser.add_argument("--probe-only", action="store_true", help="Return success if there is more work to do")
 args = parser.parse_args()
 
 model = args.model
@@ -145,7 +146,7 @@ The word `{word}` (which is word #{word_number+1}) can have multiple meanings. W
     if args.use_groq:
        # We'll do tool calling
        # I could do some enums here
-       pass
+       prompt += "\nCall the function 'specify_synset' with your answer.\n"
     else:
        # using ollama. Doesn't have tool calling
        prompt += """
@@ -168,6 +169,9 @@ Answer in JSON format, with a key of "synset", e.g.
         sys.stderr.write(f"\n{sentence_id=} {sentence=}\n")
         sys.stderr.write(prompt)
         sys.stderr.write("\n")
+    if args.probe_only:
+        # There is stuff that needs doing
+        sys.exit(0)
     messages = [{'role': 'user', 'content': prompt}]
     if args.use_groq:
         client = groq.Groq(api_key=open(args.groq_key).read().strip())
@@ -214,3 +218,11 @@ Answer in JSON format, with a key of "synset", e.g.
         update_cursor.close()
     if need_to_stop_now:
         sys.exit(0)
+    if args.use_groq:
+       next_slot = starting_moment + 15 - time.time()
+       if next_slot > 0:
+         time.sleep(next_slot)
+
+if args.probe_only:
+   # Nothing required action 
+   sys.exit(1)
