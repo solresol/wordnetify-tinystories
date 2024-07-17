@@ -18,7 +18,7 @@ parser.add_argument("--limit", type=int, help="Stop after processing this many r
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
 parser.add_argument("--model", help="Which model to use: defaults to phi3 for ollama, and llama3 for groq")
 parser.add_argument("--show-conversation", action="store_true", help="Show the prompt and output from the language model")
-parser.add_argument("--groq-key", default=os.path.expanduser('~/.groq.key'), 
+parser.add_argument("--groq-key", default=os.path.expanduser('~/.groq.key'),
      help="Where to find the groq key (if groq is being used)")
 parser.add_argument("--use-groq", action="store_true", help="Call out to groq instead of using a local ollama-based model")
 parser.add_argument("--probe-only", action="store_true", help="Return success if there is more work to do")
@@ -30,7 +30,7 @@ if model is None:
       model = 'llama3-70b-8192'
    else:
       model = 'phi3'
- 
+
 conn = sqlite3.connect(args.database)
 cursor = conn.cursor()
 cursor.execute("pragma busy_timeout = 30000;")
@@ -40,13 +40,23 @@ cursor.execute("create table if not exists costs (word_id integer references wor
 if (args.congruent is not None and args.modulo is None) or (args.congruent is None and args.modulo is not None):
     sys.exit("Must specify both --congruent and --modulo or neither")
 
-query = "select id, sentence_id, word_number, word from words where resolved_synset is null"
+pronouns_and_punctuation = ['i', 'me', 'my', 'mine',
+                'you', 'your', 'u',
+                'he', 'him', 'his',
+                'she', 'her',
+                'it', 'its',
+                'we', 'us', 'our',
+                'they', 'them', 'their', '!', '.', '?']
+quoted_pronouns_and_punctuation = [f"'{x}'" for x in pronouns_and_punctuation]
+pronoun_exclusion_clause = f"lower(word) not in (" + (', '.join(quoted_pronouns_and_punctuation)) + ')'
+
+query = "select story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) where resolved_synset is null and synset_count > 1 and " + pronoun_exclusion_clause
 
 if args.congruent is not None and args.modulo is not None:
-    cursor.execute(f"create index if not exists unresolved_words_{args.congruent}_mod_{args.modulo} on words(id) where resolved_synset is null and id % {args.modulo} = {args.congruent}")
-    query += f" and id % {args.modulo} = {args.congruent}"
+    query += f" and story_id % {args.modulo} = {args.congruent}"
+    cursor.execute(f"create index if not exists sentences_by_story_{args.congruent}_mod_{args.modulo} on sentences(id) where story_id % {args.modulo} = {args.congruent}")
 else:
-    cursor.execute(f"create index if not exists unresolved_words on words(resolved_synset) where resolved_synset is null")
+    cursor.execute(f"create index if not exists unresolved_words on words(resolved_synset) where resolved_synset is null and synset_count > 1")
 
 if args.limit is not None:
     query += f" limit {args.limit}"
@@ -115,15 +125,12 @@ def handle_interruption(signum, frame):
 
 signal.signal(signal.SIGTERM, handle_interruption)
 
-for (word_id, sentence_id, word_number, word) in iterator:
-    if word.lower() in ['i', 'me', 'my', 'mine',
-                'you', 'your', 'u',
-                'he', 'him', 'his',
-                'she', 'her', 
-                'it', 'its', 
-                'we', 'us', 'our',
-                'they', 'them', 'their', '!', '.', '?']:
-        continue
+for (story_id, word_id, sentence_id, word_number, word) in iterator:
+    if args.progress_bar:
+      iterator.set_description(f"Story {story_id}")
+    if word.lower() in pronouns_and_punctuation:
+       # Shouldn't happen
+       continue
     starting_moment = time.time()
     sentence = get_sentence(sentence_id)
 
@@ -187,9 +194,9 @@ Answer in JSON format, with a key of "synset", e.g.
                               [word_id, api_response.usage.prompt_tokens,
                                api_response.usage.completion_tokens])
         conn.commit()
-        update_cursor.close() 
+        update_cursor.close()
         response_message = api_response.choices[0].message
-        
+
         tool_calls = response_message.tool_calls
         if tool_calls:
            # Should always be true, should always be a list of length 1
@@ -224,5 +231,5 @@ Answer in JSON format, with a key of "synset", e.g.
          time.sleep(next_slot)
 
 if args.probe_only:
-   # Nothing required action 
+   # Nothing required action
    sys.exit(1)
