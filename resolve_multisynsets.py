@@ -16,7 +16,7 @@ parser.add_argument("--congruent", type=int, help="Only process rows with ids th
 parser.add_argument("--modulo", type=int, help="Only process rows with ids that are congruent to --congruent modulo this number")
 parser.add_argument("--limit", type=int, help="Stop after processing this many rows")
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
-parser.add_argument("--model", help="Which model to use: defaults to phi3 for ollama, and llama3 for groq")
+parser.add_argument("--model", help="Which model to use: defaults to phi3 for ollama, and llama3.1 for groq")
 parser.add_argument("--show-conversation", action="store_true", help="Show the prompt and output from the language model")
 parser.add_argument("--groq-key", default=os.path.expanduser('~/.groq.key'),
      help="Where to find the groq key (if groq is being used)")
@@ -27,7 +27,8 @@ args = parser.parse_args()
 model = args.model
 if model is None:
    if args.use_groq:
-      model = 'llama3-70b-8192'
+      #model = 'llama3-70b-8192'
+      model = 'llama-3.1-70b-versatile'
    else:
       model = 'phi3'
 
