@@ -6,3 +6,4 @@ requests
 backoff
 gunicorn
 groq
+openai
