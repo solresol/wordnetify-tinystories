@@ -19,6 +19,7 @@ parser.add_argument("--output-file", required=True, help="Where to put the batch
 parser.add_argument("--dry-run", action="store_true", help="Don't send the batch to OpenAI")
 parser.add_argument("--verbose", action="store_true", help="Lots of debugging messages")
 parser.add_argument("--openai-api-key", default=os.path.expanduser("~/.openai.key"))
+parser.add_argument("--batch-id-save-file", help="What file to put the local batch ID into")
 args = parser.parse_args()
 
 conn = sqlite3.connect(args.database)
@@ -196,3 +197,7 @@ if update_cursor.rowcount != 1:
     sys.exit(f"Unexpectedly updated {update_cursor.rowcount} rows when we set the openai_batch id to {result.id} for batch {batch_id}")
 
 conn.commit()
+
+if args.batch_id_save_file:
+    with open(args.batch_id_save_file, 'w') as bisf:
+        bisf.write(f"{batch_id}")
