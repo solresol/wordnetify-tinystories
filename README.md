@@ -4,6 +4,8 @@ Takes a TinyStories file and converts each word to a wordnet node.
 
 # Usage
 
+## Setup and Download
+
 Set up a virtualenv and install dependencies.
 
 `virtualenv .venv`
@@ -12,7 +14,15 @@ Set up a virtualenv and install dependencies.
 
 `pip install -r requirements.txt`
 
+
+Then install the NLTK data:
+
+	nltk.download('punkt')
+	nltk.download('wordnet')
+
 Download `TinyStoriesV2-GPT4-train.txt` and `TinyStoriesV2-GPT4-valid.txt`
+
+## Run wordnetify 
 
 Run:
 
@@ -22,6 +32,9 @@ Make a note of how long that took, because the next command will take 100x longe
 
 `./wordnetify.py --database tinystories.sqlite --progress --file TinyStoriesV2-GPT4-train.txt`
 
+## Resolve synsets
+
+### Option 1 for resolving synsets (don't use this)
 
 Install [https://ollama.com/](ollama), start it (`ollama serve`) and download a model (e.g. `llama3`)
 
@@ -36,3 +49,60 @@ you would run
 `./resolve_multisynsets.py --database tinystories.sqlite --congruent 3 --modulo 16`
 
 You can use a smaller model, e.g. `--model phi3`
+
+That might complete if you have a few months to run it.
+
+### Option 2 (don't use this either)
+
+`./resolve_multisynsets.py` can use groq. You'll need to give it a groq key.
+It's faster, but not fast enough. (And not cheap enough.)
+
+### Option 3
+
+Set up an OpenAI api key. You can supply it on the command-line, or else it
+will default to ~/.openai.key
+
+	./generate_multisynset_batch.py --database TinyStories.sqlite \
+		--congruent 3 --module 1000 \
+		--output-file .batchfiles/batch-$(date +%F-%T).jsonl \
+		--limit 40000 --progress-bar \
+		--batch-id-save-file .batchid.txt
+		
+That will take every thousandth story (which is about what we want). The output
+file doesn't really matter, but it's nice to be able to keep them. 
+OpenAI doesn't like to have more than 40,000 records in one job. Having the
+ID of the batch is convenient.
+
+	./batchcheck.py --database TinyStories.sqlite  \
+		--only-batch $(< .batchid.txt) --monitor
+		
+That will keep track of it that batch, show how it is progressing, and stop
+when it is complete.
+
+	./batchfetch.py --database TinyStories.sqlite \
+		--progress-bar --report-costs
+
+This stores the results back in the database.
+
+40,000 records takes about 100 minutes, and costs about $1.75.
+
+## Create wordnet database with extras
+
+`./make_wordnet_database.py --database TinyStories.sqlite`
+
+This currently doesn't quite do what it is supposed to do. It doesn't
+yet create nodes for pronouns or punctuation, or other unknowns.
+
+- punctuation should have "sentence breakers" and "phrase separators" and then
+  each item of punctuation
+  
+- pronouns... not sure if we put nominative and accusative as separate dividers?
+
+- proper nouns and other parts of speech... maybe the path is a hash of the word?
+  Perhaps a soundex of the word, and then the hash?
+
+
+# Next steps
+
+Compile the ultrametric-trees programs, to convert the Tiny Stories sentences
+into a giant dataframe of wordnet paths.
