@@ -55,7 +55,8 @@ pronouns_and_punctuation = ['i', 'me', 'my', 'mine',
 quoted_pronouns_and_punctuation = [f"'{x}'" for x in pronouns_and_punctuation]
 pronoun_exclusion_clause = f"lower(word) not in (" + (', '.join(quoted_pronouns_and_punctuation)) + ')'
 
-query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and synset_count > 1 and " + pronoun_exclusion_clause + " and (batch_id is null)"
+#query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and synset_count > 1 and " + pronoun_exclusion_clause + " and (batch_id is null)"
+query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and (batch_id is null)"
 
 if args.congruent is not None and args.modulo is not None:
     query += f" and story_id % {args.modulo} = {args.congruent}"
@@ -107,12 +108,14 @@ tools = [ { "type": "function",
             "function": {
                 "name": "specify_synset",
                 "description": "Specify which synset is being used",
+                "strict": True,
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "synset": {
                             "type": "string",
                             "description": "Which synset the word corresponds to, or '(other)' if none of the supplied synsets are appropriate",
+                            "enum": []
                         }
                     },
                     "required": ["synset"],
@@ -126,27 +129,45 @@ output_file = open(args.output_file, 'w')
 for (story_id, word_id, sentence_id, word_number, word) in iterator:
     if args.progress_bar:
       iterator.set_description(f"Story {story_id}")
-    if word.lower() in pronouns_and_punctuation:
-       # Shouldn't happen
-       continue
     sentence = get_sentence(sentence_id)
 
-    prompt = f"""Consider this sentence:
-    {sentence}
-The word `{word}` (which is word #{word_number+1}) can have multiple meanings. Which of the following meanings is it being used for in this sentence?
-
-"""
-    alternatives = 0
+    prompt = ""
+    alternatives = []
     for (synset_id, description, examples) in get_synsets(word_id):
-        alternatives += 1
+        alternatives.append(synset_id)
         prompt += f" ({synset_id}) -- {description}"
         if examples is not None and examples.strip() != '':
             prompt += f"\n       Example use: {examples}"
         prompt += "\n\n"
-    if alternatives == 0:
-       continue
-    prompt += """ (other) -- none of those synsets match the word's meaning here
+    if len(alternatives) == 0:
+       narrative = ""
+       preprompt = f"""Consider this sentence:
+    {sentence}
+The word `{word}` is acting as what part of speech?
+
 """
+    else:
+        narrative = "none of those synsets match, and the word is acting as "
+        preprompt = f"""Consider this sentence:
+    {sentence}
+The word `{word}` (which is word #{word_number+1}) can have multiple meanings. Which of the following meanings is it being used for in this sentence?
+
+"""
+    prompt = preprompt + prompt
+    
+    prompt += f""" (noun.other) -- {narrative} a noun
+ (pronoun.other) -- {narrative} a pronoun
+ (verb.other) -- {narrative} a verb
+ (article.other) -- {narrative} an article
+ (preposition.other) -- {narrative} a preposition
+ (adjective.other) -- {narrative} an adjective
+ (adverb.other) -- {narrative} an adverb
+ (conjunction.other) -- {narrative} a conjunction
+ (punctuation.other) -- {narrative} punctuation
+ (other.other) -- {narrative} something else not otherwise listed here
+"""
+    alternatives += ["(noun.other)", "(pronoun.other)", "(verb.other)", "(article.other)", "(preposition.other)", "(adjective.other)", "(adverb.other)", "(conjunction.other)", "(punctuation.other)", "(other.other)"]
+    tools[0]["function"]["parameters"]["properties"]["synset"]["enum"] = alternatives
 
     messages = [{'role': 'user', 'content': prompt}]
     batch_text = {
