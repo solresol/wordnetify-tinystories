@@ -38,6 +38,11 @@ for local_batch_id, openai_batch_id in cursor:
     openai_result = client.batches.retrieve(openai_batch_id)
     if openai_result.status != 'completed':
         continue
+    if openai_result.error_file_id is not None:
+        error_file_response = client.files.content(openai_result.error_file_id)
+        sys.stderr.write(error_file_response.text)
+    if openai_result.output_file_id is None:
+        continue
     file_response = client.files.content(openai_result.output_file_id)
     iterator = file_response.text.splitlines()
     if args.progress_bar:
