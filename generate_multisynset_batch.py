@@ -111,6 +111,7 @@ tools = [ { "type": "function",
                 "strict": True,
                 "parameters": {
                     "type": "object",
+                    "additionalProperties": False,
                     "properties": {
                         "synset": {
                             "type": "string",
