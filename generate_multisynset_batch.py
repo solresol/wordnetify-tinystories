@@ -127,7 +127,9 @@ tools = [ { "type": "function",
 
 output_file = open(args.output_file, 'w')
 
+did_something = False
 for (story_id, word_id, sentence_id, word_number, word) in iterator:
+    did_something = True
     if args.progress_bar:
       iterator.set_description(f"Story {story_id}")
     sentence = get_sentence(sentence_id)
@@ -187,6 +189,9 @@ The word `{word}` (which is word #{word_number+1}) can have multiple meanings. W
         print(word_id, word, sentence)
     update_cursor.execute("insert into batchwords (batch_id, word_id) values (?,?)", [batch_id, word_id])
 
+if not did_something:
+    sys.exit("Nothing to do.")
+
 output_file.close()
 if args.dry_run:
     conn.rollback()
@@ -223,3 +228,4 @@ conn.commit()
 if args.batch_id_save_file:
     with open(args.batch_id_save_file, 'w') as bisf:
         bisf.write(f"{batch_id}")
+
