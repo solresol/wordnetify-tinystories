@@ -45,17 +45,6 @@ batch_id = update_cursor.lastrowid
 if (args.congruent is not None and args.modulo is None) or (args.congruent is None and args.modulo is not None):
     sys.exit("Must specify both --congruent and --modulo or neither")
 
-pronouns_and_punctuation = ['i', 'me', 'my', 'mine',
-                'you', 'your', 'u',
-                'he', 'him', 'his',
-                'she', 'her',
-                'it', 'its',
-                'we', 'us', 'our',
-                'they', 'them', 'their', '!', '.', '?']
-quoted_pronouns_and_punctuation = [f"'{x}'" for x in pronouns_and_punctuation]
-pronoun_exclusion_clause = f"lower(word) not in (" + (', '.join(quoted_pronouns_and_punctuation)) + ')'
-
-#query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and synset_count > 1 and " + pronoun_exclusion_clause + " and (batch_id is null)"
 query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and (batch_id is null)"
 
 if args.congruent is not None and args.modulo is not None:
