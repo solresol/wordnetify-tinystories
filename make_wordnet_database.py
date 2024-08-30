@@ -1,78 +1,13 @@
 #!/usr/bin/env python3
 
+# This probably should be part of wordnetify.py
+
 import nltk
 from nltk.corpus import wordnet as wn
 import sqlite3
 import argparse
 import sys
-import hashlib
-
-def get_hypernym_path(synset):
-    if synset.name() == 'entity.n.01':
-        return [synset]
-
-    hypernyms = sorted(synset.hypernyms())
-    if not hypernyms:
-        return [synset]
-
-    shortest_path = None
-    for hypernym in hypernyms:
-        hypernym_path = get_hypernym_path(hypernym)
-        if not hypernym_path:
-            continue
-        if not shortest_path:
-            shortest_path = hypernym_path
-            continue
-        shortest_path = shortest_path if len(shortest_path) < len(hypernym_path) else hypernym_path
-
-    return hypernym_path + [synset]
-
-def hash_synset(synset):
-    return hash_thing(synset.name())
-
-def hash_thing(thing):
-    return str(int(hashlib.sha256(thing.encode('utf-8')).hexdigest(),16) % (2**32))
-
-def get_path_string(synset):
-    # 1 = noun
-    # 1.2 = pronoun
-    # 2 = adjective
-    # 3 = verb
-    # 4 = adverb
-    # 5 = punctuation
-
-    # Adjectives, we're kind of weak on. We just hash them.
-    if synset.pos() in ['a', 's']:
-        return f'2.{hash_synset(synset)}'
-
-    if synset.pos() in ['r']:
-        return f'4.{hash_synset(synset)}'
-
-    if synset.pos() in ['n', 'v']:
-        path = get_hypernym_path(synset)
-        if not path:
-            sys.exit(f"No path for {synset}")
-
-        if synset.pos() == 'n':
-            path_indices = ['1']  # Start with '1' for the nouns
-        else:
-            path_indices = ['3']
-        path_indices.append(hash_synset(path[0]))
-        for i in range(len(path) - 1):
-            parent = path[i]
-            child = path[i+1]
-            hyponyms = sorted(parent.hyponyms(), key=lambda s: s.name())
-            try:
-                index = hyponyms.index(child) + 1
-            except ValueError:
-                # bug in wordnet: wn.synset('inhibit.v.04').hypernyms()[0].hyponyms() doesn't show inhibit.v.01
-                if child.name() == 'inhibit.v.04':
-                    index = 2
-                else:
-                    raise
-            path_indices.append(str(index))
-
-        return '.'.join(path_indices)
+import wordpaths
 
 def traverse_wordnet(db_path):
     conn = sqlite3.connect(db_path)
@@ -84,7 +19,7 @@ def traverse_wordnet(db_path):
                   definition TEXT)''')
 
     for synset in wn.all_synsets():
-        path = get_path_string(synset)
+        path = wordpaths.get_path_string(synset)
         if path:
             c.execute("INSERT OR REPLACE INTO synset_paths (path, synset_name, definition) VALUES (?, ?, ?)",
                       (path, synset.name(), synset.definition()))
@@ -110,13 +45,16 @@ def add_misc(db_path):
                                             'which', 'what',
                                             # 'that'
                                            ]
-    terminal_punctuation = ['.', '?', '!']
+    other_pronouns = [ 'everything', 'everyone', 'noone', 'nothing']
+    terminal_punctuation = ['.', '?', '!', '<end-of-text>', '<start-of-text>']
     pausing_and_separating_punctuation = [',', ';', ':', '-',  '--']
-    quotation_and_parenthetical_punctuation = ['"', "'", '(', ')', '[', ']', '...']
+    quotation_and_parenthetical_punctuation = ['"', "'", '(', ')', '[', ']', '...', '``', "''",'']
     linking_punctuation = ['/']
-    specialized_punctuation = ['...', '&', '*', '^', '•']
+    specialized_punctuation = ['...', '&', '*', '^', '•', "'s"]
+    # I really don't know what to do about 's -- I should identify its role and then do something
+    # cleverer about it.
 
-    conjunctions = ['and', 'or', 'but', 'nor', 'for', 'yet', 'so', 'either', 'neither', 'whether', 'both']
+    conjunctions = ['and', 'or', 'but', 'nor', 'for', 'yet', 'so', 'either', 'neither', 'whether', 'both', 'how', 'if', 'then', 'because', 'when']
     # I have no structure for prepositions.
     prepositions = ['in', 'on', 'at', 'by', 'with', 'about', 'against', 'between', 'into', 'through', 'during',
                     'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'behind',
@@ -132,30 +70,33 @@ def add_misc(db_path):
 
 
     for i,p in enumerate(personal_pronouns):
-        c.execute("insert or replace into synset_paths (path, synset_name) values ('1.2.1' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name) values ('1.2.1.' || ?, ?)", [i+1, p])
     for i,p in enumerate(possessive_pronouns):
-        c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.2' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.2.' || ?, ?)", [i+1, p])
     for i,p in enumerate(reflexive_pronouns):
         # I'm not quite happy with this: I think these should live under "adjectives" (2.*) some of the time.
         c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.3' || ?, ?)", [i+1, p])
 
     for i,p in enumerate(demonstrative_pronouns):
         # I'm not quite happy with this either: I think these should live under "nouns" (1.*) some of the time.
-        c.execute("insert or replace into synset_paths (path, synset_name)  values ('2.1.1' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name)  values ('2.1.1.' || ?, ?)", [i+1, p])
 
     for i,p in enumerate(interrogative_and_relative_pronouns):
-        c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.4' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.4.' || ?, ?)", [i+1, p])
+
+    for i,p in enumerate(other_pronouns):
+        c.execute("insert or replace into synset_paths (path, synset_name) values  ('1.2.5.' || ?, ?)", [i+1, p])    
 
     for i,p in enumerate(terminal_punctuation):
-        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.1.1' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.1.1.' || ?, ?)", [i+1, p])
     for i,p in enumerate(pausing_and_separating_punctuation):
-        c.execute("insert or replace into synset_paths (path, synset_name) values  ('5.2' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name) values  ('5.2.' || ?, ?)", [i+1, p])
     for i,p in enumerate(quotation_and_parenthetical_punctuation):
-        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.3' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.3.' || ?, ?)", [i+1, p])
     for i,p in enumerate(linking_punctuation):
-        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.4' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.4.' || ?, ?)", [i+1, p])
     for i,p in enumerate(specialized_punctuation):
-        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.5' || ?, ?)", [i+1, p])
+        c.execute("insert or replace into synset_paths (path, synset_name)  values ('5.5.' || ?, ?)", [i+1, p])
 
     # Adding conjunctions
     for i, conj in enumerate(conjunctions):
@@ -163,7 +104,7 @@ def add_misc(db_path):
 
     # Adding prepositions using hash function
     for prep in prepositions:
-        hash_val = hash_thing(prep)
+        hash_val = wordpaths.hash_thing(prep)
         c.execute("insert or replace into synset_paths (path, synset_name) values ('6.' || ?, ?)", [hash_val, prep])
 
     # Adding articles

@@ -90,16 +90,8 @@ This stores the results back in the database.
 
 `./make_wordnet_database.py --database TinyStories.sqlite`
 
-This currently doesn't quite do what it is supposed to do. It doesn't
-yet create nodes for pronouns or punctuation, or other unknowns.
-
-- punctuation should have "sentence breakers" and "phrase separators" and then
-  each item of punctuation
-  
-- pronouns... not sure if we put nominative and accusative as separate dividers?
-
-- proper nouns and other parts of speech... maybe the path is a hash of the word?
-  Perhaps a soundex of the word, and then the hash?
+- proper nouns and other parts of speech... at the moment, the path is a hash of the word.
+  Perhaps a soundex of the word would be better, and then the hash?
 
 
 # Next steps

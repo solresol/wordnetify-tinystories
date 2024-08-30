@@ -51,9 +51,9 @@ while True:
                 # at the start
                 progress = tqdm.tqdm(total=number_of_words)
             progress.set_description(openai_result.status)
-            if openai_result.status == 'in_progress':
+            if openai_result.status in ['in_progress', 'completed']:
                 progress.update(openai_result.request_counts.completed - progress.n)
-            elif openai_result.status == 'completed':
+            if openai_result.status == 'completed':
                 break
             time.sleep(15)
             continue
@@ -71,8 +71,8 @@ while True:
             for err in openai_result.errors.data:
                  print(f"         - {err.code} on line {err.line}: {err.message}")
         if openai_result.request_counts:
-            print(f"     Progress: {openai_result.request_counts.completed}/{openai_result.request_counts.total}")
-            print(f"     Failures: {openai_result.request_counts.failed}")
+            print(f"       Progress: {openai_result.request_counts.completed}/{openai_result.request_counts.total}")
+            print(f"       Failures: {openai_result.request_counts.failed}")
         print()
         #print(openai_result)
     if not args.monitor:

@@ -142,13 +142,14 @@ The word `{word}` is acting as what part of speech?
         narrative = "none of those synsets match, and the word is acting as "
         preprompt = f"""Consider this sentence:
     {sentence}
-The word `{word}` (which is word #{word_number+1}) can have multiple meanings. Which of the following meanings is it being used for in this sentence?
+I want to sense annotate the word `{word}` (which is word #{word_number+1}). You can ignore tense and number because we only care about the sense of the lemma. Which of the following meanings is it being used for in this sentence?
 
 """
     prompt = preprompt + prompt
     
     prompt += f""" (noun.other) -- {narrative} a noun
  (pronoun.other) -- {narrative} a pronoun
+ (propernoun.other) -- {narrative} a proper noun
  (verb.other) -- {narrative} a verb
  (article.other) -- {narrative} an article
  (preposition.other) -- {narrative} a preposition
@@ -158,7 +159,8 @@ The word `{word}` (which is word #{word_number+1}) can have multiple meanings. W
  (punctuation.other) -- {narrative} punctuation
  (other.other) -- {narrative} something else not otherwise listed here
 """
-    alternatives += ["(noun.other)", "(pronoun.other)", "(verb.other)", "(article.other)", "(preposition.other)", "(adjective.other)", "(adverb.other)", "(conjunction.other)", "(punctuation.other)", "(other.other)"]
+    # Really, I should be asking for pronoun class as well (demonstrative) and its part of speech
+    alternatives += ["(noun.other)", "(pronoun.other)", "(propernoun.other)", "(verb.other)", "(article.other)", "(preposition.other)", "(adjective.other)", "(adverb.other)", "(conjunction.other)", "(punctuation.other)", "(other.other)"]
     tools[0]["function"]["parameters"]["properties"]["synset"]["enum"] = alternatives
 
     messages = [{'role': 'user', 'content': prompt}]
@@ -169,6 +171,7 @@ The word `{word}` (which is word #{word_number+1}) can have multiple meanings. W
         "body": {
             "model": "gpt-4o-mini",
             "messages": messages,
+            "temperature": 0,
             "tools": tools,
             "tool_choice": {"type": "function", "function": {"name": "specify_synset"}}
         }

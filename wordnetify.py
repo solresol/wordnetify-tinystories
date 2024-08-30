@@ -70,7 +70,7 @@ def create_schema(conn):
         word_number INTEGER NOT NULL,
         word TEXT NOT NULL,
         synset_count INTEGER NOT NULL,
-        resolved_synset TEXT,
+        resolved_synset TEXT CHECK (resolved_synset is null or resolved_synset like '%._.__' or resolved_synset like '(%.other)',
         resolving_model TEXT,
         resolved_timestamp datetime,
         resolution_compute_time FLOAT,
@@ -182,6 +182,13 @@ def main():
             for word in nltk.word_tokenize(sentence):
                 synsets = nltk.corpus.wordnet.synsets(word)
                 synset_count = len(synsets)
+                # This was a bad idea. If a word has one synset, but happens to also be
+                # a preposition or a pronoun or something, then this gets the wrong answer.
+                # Also, I should have lemmatized it first.
+                # I think in the future we can get rid of the resolved_synset and synset_count
+                # TBH, now that I know that the fastest way to resolve synsets is to use chatgpt + batch
+                # it probably makes more sense to fire off a query for every word to get the lemmatized
+                # form and then come back to get the synsets.
                 resolved_synset = synsets[0].name() if synset_count == 1 else None
                 word_id = insert_word(conn, sentence_id, word_number, word, synset_count, resolved_synset)
                 word_number += 1
