@@ -91,6 +91,19 @@ def create_schema(conn):
         description TEXT,
         examples TEXT
     );""")
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_words_sentence_id ON words(sentence_id);
+    """)
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_sentences_story_id_number ON sentences(story_id, sentence_number);
+    """)
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_words_sentence_word_number ON words(sentence_id, word_number);
+    """)
+    
     
     conn.commit()
 
