@@ -35,7 +35,7 @@ def read_file_in_chunks(file_path, starting_position=None, max_chunks=None):
             yield (file.tell(), ''.join(chunk))
 
 
-def create_schema(conn):
+def create_schema(conn: sqlite3.Connection) -> None:
     """Create the database schema."""
     cursor = conn.cursor()
 
