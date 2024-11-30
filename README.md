@@ -18,6 +18,7 @@ Set up a virtualenv and install dependencies.
 Then install the NLTK data:
 
 	nltk.download('punkt')
+	nltk.download('punkt_tab')
 	nltk.download('wordnet')
 
 Download `TinyStoriesV2-GPT4-train.txt` and `TinyStoriesV2-GPT4-valid.txt`
