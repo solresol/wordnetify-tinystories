@@ -20,6 +20,7 @@ Then install the NLTK data:
 	nltk.download('punkt')
 	nltk.download('punkt_tab')
 	nltk.download('wordnet')
+	nltk.download('punkt_tab')
 
 Download `TinyStoriesV2-GPT4-train.txt` and `TinyStoriesV2-GPT4-valid.txt`
 
@@ -50,6 +51,7 @@ you would run
 `./resolve_multisynsets.py --database tinystories.sqlite --congruent 3 --modulo 16`
 
 You can use a smaller model, e.g. `--model phi3`
+	nltk.download('punkt_tab')
 
 That might complete if you have a few months to run it.
 
