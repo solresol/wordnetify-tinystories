@@ -49,6 +49,7 @@ you would run
 `./resolve_multisynsets.py --database tinystories.sqlite --congruent 3 --modulo 16`
 
 You can use a smaller model, e.g. `--model phi3`
+	nltk.download('punkt_tab')
 
 That might complete if you have a few months to run it.
 
