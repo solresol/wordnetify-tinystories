@@ -145,7 +145,7 @@ def insert_synset(conn, synset):
     """, (synset.name(), synset.definition(), "; ".join(synset.examples())))
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Read a file in chunks separated by a delimiter and store the data in an SQLite database.")
     parser.add_argument("--file", type=str, help="The path to the file to be read.")
     parser.add_argument("--database", type=str, help="The SQLite database file.")
