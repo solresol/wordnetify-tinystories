@@ -6,8 +6,9 @@ import sqlite3
 from nltk.corpus import wordnet
 
 # Ensure necessary NLTK resources are downloaded
-#nltk.download('punkt')
-#nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('punkt_tab')
 
 
 def read_file_in_chunks(file_path, starting_position=None, max_chunks=None):

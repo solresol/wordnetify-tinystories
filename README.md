@@ -19,6 +19,7 @@ Then install the NLTK data:
 
 	nltk.download('punkt')
 	nltk.download('wordnet')
+	nltk.download('punkt_tab')
 
 Download `TinyStoriesV2-GPT4-train.txt` and `TinyStoriesV2-GPT4-valid.txt`
 
