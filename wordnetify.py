@@ -6,8 +6,9 @@ import sqlite3
 from nltk.corpus import wordnet
 
 # Ensure necessary NLTK resources are downloaded
-#nltk.download('punkt')
-#nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('punkt_tab')
 
 
 def read_file_in_chunks(file_path, starting_position=None, max_chunks=None):
@@ -70,7 +71,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
         word_number INTEGER NOT NULL,
         word TEXT NOT NULL,
         synset_count INTEGER NOT NULL,
-        resolved_synset TEXT CHECK (resolved_synset is null or resolved_synset like '%._.__' or resolved_synset like '(%.other)',
+        resolved_synset TEXT CHECK (resolved_synset is null or resolved_synset like '%._.__' or resolved_synset like '(%.other)'),
         resolving_model TEXT,
         resolved_timestamp datetime,
         resolution_compute_time FLOAT,

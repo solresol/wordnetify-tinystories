@@ -1,0 +1,33 @@
+name: Run Wordnetify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Download NLTK data
+      run: |
+        python -m nltk.downloader punkt
+        python -m nltk.downloader wordnet
+
+    - name: Run wordnetify
+      run: |
+        python wordnetify.py --database tinystories.sqlite --progress --file tests/sample.txt
+
+    - name: Check for successful execution
+      run: echo "Wordnetify script executed successfully"
