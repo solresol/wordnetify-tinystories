@@ -7,6 +7,7 @@ from nltk.corpus import wordnet
 
 # Ensure necessary NLTK resources are downloaded
 #nltk.download('punkt')
+nltk.download('punkt_tab')
 #nltk.download('wordnet')
 
 
