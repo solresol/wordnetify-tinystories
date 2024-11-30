@@ -11,7 +11,9 @@ nltk.download('wordnet')
 nltk.download('punkt_tab')
 
 
-def read_file_in_chunks(file_path, starting_position=None, max_chunks=None):
+from typing import Optional, Iterator, Tuple
+
+def read_file_in_chunks(file_path: str, starting_position: Optional[int] = None, max_chunks: Optional[int] = None) -> Iterator[Tuple[int, str]]:
     """Read a file and yield chunks of text separated by a specific delimiter."""
     chunk = []
     chunks_delivered = 0
