@@ -18,6 +18,7 @@ Set up a virtualenv and install dependencies.
 Then install the NLTK data:
 
 	nltk.download('punkt')
+	nltk.download('punkt_tab')
 	nltk.download('wordnet')
 	nltk.download('punkt_tab')
 
