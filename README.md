@@ -65,9 +65,8 @@ It's faster, but not fast enough. (And not cheap enough.)
 Set up an OpenAI api key. You can supply it on the command-line, or else it
 will default to ~/.openai.key
 
-	./generate_multisynset_batch.py --database TinyStories.sqlite \
-		--congruent 3 --modulo 1000 \
-		--output-file .batchfiles/batch-$(date +%F-%T).jsonl \
+	./generate_multisynset_batch.py --database sample.sqlite \
+		--output-file output.jsonl \
 		--limit 40000 --progress-bar \
 		--batch-id-save-file .batchid.txt
 		
