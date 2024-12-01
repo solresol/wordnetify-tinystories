@@ -14,6 +14,10 @@ gha_enabled: True
 # This is the description of your project. It will be used by sweep when creating PRs. You can tell Sweep what's unique about your project, what frameworks you use, or anything else you want.
 #
 # Example:
+# description: sweepai/sweep is a python project. The main api endpoints are in sweepai/api.py. Write code that adheres to PEP8.
+description: 'wordnetify-tinystories is mostly a python project. It is designed to work on a large sqlite database of text.'
+
+# Reminder: Use @v4 for GitHub workflow actions.
 #
 # description: sweepai/sweep is a python project. The main api endpoints are in sweepai/api.py. Write code that adheres to PEP8.
 description: 'wordnetify-tinystories is mostly a python project. It is designed to work on a large sqlite database of text.'
