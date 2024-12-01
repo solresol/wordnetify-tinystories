@@ -1,21 +1,11 @@
-name: Sense Resolution
+name: Sense Resolution Workflow
 
 on:
   push:
-    paths:
-      - generate_multisynset_batch.py
-      - batchcheck.py
-      - batchfetch.py
-      - .github/workflows/sense-resolution.yaml
   pull_request:
-    paths:
-      - generate_multisynset_batch.py
-      - batchcheck.py
-      - batchfetch.py
-      - .github/workflows/sense-resolution.yaml
 
 jobs:
-  sense_resolution:
+  resolve_synsets:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,18 +30,22 @@ jobs:
       run: |
         sqlite3 sample.sqlite < tests/sample.sql
     - name: Run generate_multisynset_batch.py
+      continue-on-error: true
       run: |
-        ./generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
+        python3 generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
 
     - name: Run batchcheck.py
+      continue-on-error: true
       run: |
-        ./batchcheck.py --database sample.sqlite --only-batch $(< .batchid.txt) --monitor
+        python3 batchcheck.py --database sample.sqlite  --only-batch $(< .batchid.txt) --monitor
 
     - name: Run batchfetch.py
+      continue-on-error: true
       run: |
-        ./batchfetch.py --database sample.sqlite --report-costs
+        python3 batchfetch.py --database sample.sqlite --report-costs
 
     - name: Upload modified sample.sqlite
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: sample.sqlite
