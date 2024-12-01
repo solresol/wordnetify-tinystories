@@ -28,6 +28,9 @@ if [ ! -d ".batchfiles" ]; then
 fi
 
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
+    --congruent 3 --modulo 1000 \
+    --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
+    --batch-id-save-file .batchid.txt && \
   --congruent 3 --modulo 1000 \
   --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
   --batch-id-save-file .batchid.txt && \
