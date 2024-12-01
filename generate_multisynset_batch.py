@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import sqlite3
+import os
+from typing import Optional
 import json
 import sqlite3
 import time
@@ -23,6 +26,21 @@ parser.add_argument("--batch-id-save-file", help="What file to put the local bat
 args = parser.parse_args()
 
 conn = sqlite3.connect(args.database)
+cursor = conn.cursor()
+
+# Ensure the database schema is initialized
+schema_initialization = """
+CREATE TABLE IF NOT EXISTS sentences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    story_id INTEGER NOT NULL,
+    sentence_number INTEGER NOT NULL,
+    sentence TEXT NOT NULL,
+    FOREIGN KEY(story_id) REFERENCES stories(id)
+);
+"""
+cursor.execute(schema_initialization)
+
+conn.commit()
 cursor = conn.cursor()
 update_cursor = conn.cursor()
 cursor.execute("pragma busy_timeout = 30000;")
