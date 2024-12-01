@@ -1,14 +1,25 @@
 #!/bin/bash
 
 cd /tinystories/wordnetify-tinystories
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
+if [ ! -d ".venv" ]; then
+    echo "Virtual environment directory '.venv' does not exist. Creating it..."
+    python3 -m venv .venv
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to activate the virtual environment."
+        echo "Error: Failed to create the virtual environment."
         exit 1
     fi
-else
-    echo "Error: Virtual environment directory '.venv' does not exist."
+fi
+
+source .venv/bin/activate
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to activate the virtual environment."
+    exit 1
+fi
+
+echo "Installing dependencies..."
+pip install -r requirements.txt
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install dependencies."
     exit 1
 fi
 
