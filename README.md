@@ -62,12 +62,12 @@ It's faster, but not fast enough. (And not cheap enough.)
 
 ### Option 3
 
-Set up an OpenAI api key. You can supply it on the command-line, or else it
-will default to ~/.openai.key
+Set up an OpenAI API key. You can supply it on the command-line, or else it
+will default to ~/.openai.key. Note that the `--output-file` argument is mandatory and should specify a valid file path where the batch file will be saved.
 
 	./generate_multisynset_batch.py --database TinyStories.sqlite \
 		--congruent 3 --modulo 1000 \
-		--output-file .batchfiles/batch-$(date +%F-%T).jsonl \
+		--output-file /path/to/output/batch-$(date +%F-%T).jsonl \
 		--limit 40000 --progress-bar \
 		--batch-id-save-file .batchid.txt
 		
