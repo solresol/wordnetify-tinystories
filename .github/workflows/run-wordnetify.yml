@@ -45,7 +45,7 @@ jobs:
         
     - name: Check for successful execution
       run: |
-        diff sample.sql tests/sample.sql
+        diff --report-identical-files sample.sql tests/sample.sql
 
     - name: Upload sample.sql as artifact
       uses: actions/upload-artifact@v4

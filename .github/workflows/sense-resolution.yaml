@@ -2,7 +2,19 @@ name: Sense Resolution Workflow
 
 on:
   push:
+    paths:
+      - .github/workflows/sense-resolution.py
+      - tests/sample.sql
+      - generate_multisynset_batch.py
+      - batchcheck.py
+      - batchfetch.py
   pull_request:
+    paths:
+      - .github/workflows/sense-resolution.py
+      - tests/sample.sql
+      - generate_multisynset_batch.py
+      - batchcheck.py
+      - batchfetch.py
 
 jobs:
   resolve_synsets:
