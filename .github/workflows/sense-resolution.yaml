@@ -33,7 +33,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download sample.sqlite artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: sample.sqlite
       continue-on-error: true
@@ -43,7 +43,6 @@ jobs:
         if [ ! -f sample.sqlite ]; then
           echo "sample.sqlite not found, assuming it is present in the repository."
         fi
-
     - name: Run generate_multisynset_batch.py
       run: |
         ./generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
@@ -57,7 +56,7 @@ jobs:
         ./batchfetch.py --database sample.sqlite --report-costs
 
     - name: Upload modified sample.sqlite
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: sample.sqlite
         path: sample.sqlite
