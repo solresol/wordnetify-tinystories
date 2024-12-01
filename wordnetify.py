@@ -117,28 +117,28 @@ def insert_story(conn: sqlite3.Connection, filename: str, story_number: int) -> 
     """, (filename, story_number))
     return cursor.lastrowid
 
-def insert_sentence(conn, story_id, sentence_number, sentence):
+def insert_sentence(conn: sqlite3.Connection, story_id: int, sentence_number: int, sentence: str) -> int:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO sentences (story_id, sentence_number, sentence) VALUES (?, ?, ?)
     """, (story_id, sentence_number, sentence))
     return cursor.lastrowid
 
-def insert_word(conn, sentence_id, word_number, word, synset_count, resolved_synset):
+def insert_word(conn: sqlite3.Connection, sentence_id: int, word_number: int, word: str, synset_count: int, resolved_synset: Optional[str]) -> int:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO words (sentence_id, word_number, word, synset_count, resolved_synset) VALUES (?, ?, ?, ?, ?)
     """, (sentence_id, word_number, word, synset_count, resolved_synset))
     return cursor.lastrowid
 
-def insert_word_synset(conn, word_id, synset_id):
+def insert_word_synset(conn: sqlite3.Connection, word_id: int, synset_id: str) -> None:
     cursor = conn.cursor()
     # beats me how it's possible but I got multiple hits on old.s.04
     cursor.execute("""
     INSERT OR IGNORE INTO word_synsets (word_id, synset_id) VALUES (?, ?)
     """, (word_id, synset_id))
 
-def insert_synset(conn, synset):
+def insert_synset(conn: sqlite3.Connection, synset: nltk.corpus.reader.wordnet.Synset) -> None:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT OR IGNORE INTO synsets (id, description, examples) VALUES (?, ?, ?)
@@ -164,7 +164,6 @@ def main() -> None:
         cursor.execute("delete from stories where filename = ?", [args.file])
         cursor.execute("delete from filepositions where filename = ?", [args.file])
         conn.commit()
-
     cursor.execute("select position from filepositions where filename = ?", [args.file])
     row = cursor.fetchone()
     if row is None:
