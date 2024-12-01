@@ -15,7 +15,7 @@ parser.add_argument("--congruent", type=int, help="Only process rows with ids th
 parser.add_argument("--modulo", type=int, help="Only process rows with ids that are congruent to --congruent modulo this number")
 parser.add_argument("--limit", type=int, help="Stop after processing this many rows")
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
-parser.add_argument("--output-file", required=True, help="Where to put the batch file")
+parser.add_argument("--output-file", default='multisynset_batch_output.jsonl', help="Where to put the batch file")
 parser.add_argument("--dry-run", action="store_true", help="Don't send the batch to OpenAI")
 parser.add_argument("--verbose", action="store_true", help="Lots of debugging messages")
 parser.add_argument("--openai-api-key", default=os.path.expanduser("~/.openai.key"))
@@ -114,7 +114,10 @@ tools = [ { "type": "function",
         }
     ]
 
-output_file = open(args.output_file, 'w')
+try:
+    output_file = open(args.output_file, 'w')
+except IOError as e:
+    sys.exit(f"Failed to open the output file ({{args.output_file}}): {{e}}")
 
 did_something = False
 for (story_id, word_id, sentence_id, word_number, word) in iterator:
