@@ -61,7 +61,78 @@ else:
 
 if args.limit is not None:
     query += f" limit {args.limit}"
+def create_schema(conn: sqlite3.Connection) -> None:
+    """Create the database schema."""
+    cursor = conn.cursor()
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS filepositions (
+       filename text primary key,
+       position integer not null
+    );""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS stories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        story_number INTEGER NOT NULL,
+        UNIQUE(filename, story_number),
+        FOREIGN KEY(filename) references filepositions (filename)
+    );""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sentences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        story_id INTEGER NOT NULL,
+        sentence_number INTEGER NOT NULL,
+        sentence TEXT NOT NULL,
+        FOREIGN KEY(story_id) REFERENCES stories(id)
+    );""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS words (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sentence_id INTEGER NOT NULL,
+        word_number INTEGER NOT NULL,
+        word TEXT NOT NULL,
+        synset_count INTEGER NOT NULL,
+        resolved_synset TEXT CHECK (resolved_synset is null or resolved_synset like '%._.__' or resolved_synset like '(%.other)'),
+        resolving_model TEXT,
+        resolved_timestamp datetime,
+        resolution_compute_time FLOAT,
+        FOREIGN KEY(sentence_id) REFERENCES sentences(id)
+    );""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS word_synsets (
+        word_id INTEGER NOT NULL,
+        synset_id TEXT NOT NULL,
+        PRIMARY KEY(word_id, synset_id),
+        FOREIGN KEY(word_id) REFERENCES words(id)
+    );""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS synsets (
+        id TEXT PRIMARY KEY,
+        description TEXT,
+        examples TEXT
+    );""")
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_words_sentence_id ON words(sentence_id);
+    """)
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_sentences_story_id_number ON sentences(story_id, sentence_number);
+    """)
+
+    cursor.execute("""
+    CREATE INDEX if not exists idx_words_sentence_word_number ON words(sentence_id, word_number);
+    """)
+    
+    conn.commit()
+
+create_schema(conn)
 cursor.execute(query)
 iterator = []
 for row in cursor:
