@@ -1,9 +1,8 @@
 #!/bin/bash
 
 cd /tinystories/wordnetify-tinystories
-. .venv/bin/activate
-
-python3 wordnetify.py --database TinyStories.sqlite
+. .venv/bin/activate && \
+python3 wordnetify.py --database TinyStories.sqlite && \
 
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
 	 --congruent 3 --modulo 1000 \
