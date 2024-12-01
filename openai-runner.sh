@@ -23,6 +23,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+if [ ! -d ".batchfiles" ]; then
+    mkdir -p .batchfiles
+fi
+
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
   --congruent 3 --modulo 1000 \
   --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
