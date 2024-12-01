@@ -11,14 +11,8 @@ branch: 'main'
 # By default Sweep will read the logs and outputs from your existing Github Actions. To disable this, set this to false.
 gha_enabled: True
 
-# This is the description of your project. It will be used by sweep when creating PRs. You can tell Sweep what's unique about your project, what frameworks you use, or anything else you want.
-#
-# Example:
-#
-# description: sweepai/sweep is a python project. The main api endpoints are in sweepai/api.py. Write code that adheres to PEP8.
-description: 'wordnetify-tinystories is mostly a python project. It is designed to work on a large sqlite database of text.'
+description: 'wordnetify-tinystories is mostly a python project. It is designed to work on a large sqlite database of text. It uses @v4 for Github workflow actions'
 
-# This sets whether to create pull requests as drafts. If this is set to True, then all pull requests will be created as drafts and GitHub Actions will not be triggered.
 draft: False
 
 # This is a list of directories that Sweep will not be able to edit.
