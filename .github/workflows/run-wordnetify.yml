@@ -37,7 +37,12 @@ jobs:
 
     - name: Run wordnetify
       run: |
-        python wordnetify.py --database tinystories.sqlite --progress --file tests/sample.txt
+        python wordnetify.py --database sample.sqlite --progress --file tests/sample.txt
 
     - name: Check for successful execution
       run: echo "Wordnetify script executed successfully"
+    - name: Upload sample.sqlite as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sample-database
+        path: sample.sqlite
