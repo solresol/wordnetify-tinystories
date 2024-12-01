@@ -1,7 +1,11 @@
 #!/bin/bash
 
 cd /tinystories/wordnetify-tinystories
+if [ ! -d ".venv" ]; then
+    python3 -m venv .venv
+fi
 . .venv/bin/activate
+pip install -r requirements.txt
 
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
 	 --congruent 3 --modulo 1000 \
