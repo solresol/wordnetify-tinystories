@@ -2,6 +2,7 @@
 
 cd /tinystories/wordnetify-tinystories
 . .venv/bin/activate
+python3 wordnetify.py --database TinyStories.sqlite
 
 output_file=".batchfiles/batch-$(date +%F-%T).jsonl"
 
