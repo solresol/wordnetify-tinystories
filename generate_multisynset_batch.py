@@ -29,6 +29,17 @@ conn = sqlite3.connect(args.database)
 cursor = conn.cursor()
 
 # Ensure the database schema is initialized
+# Initialize words table if it doesn't exist
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS words (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    word TEXT NOT NULL,
+    word_frequency INTEGER DEFAULT 0,
+    resolved_synset TEXT,
+    synset_count INTEGER DEFAULT 0
+);
+''')
+
 schema_initialization = """
 CREATE TABLE IF NOT EXISTS sentences (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
