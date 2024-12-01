@@ -1,0 +1,63 @@
+name: Sense Resolution
+
+on:
+  push:
+    paths:
+      - generate_multisynset_batch.py
+      - batchcheck.py
+      - batchfetch.py
+      - .github/workflows/sense-resolution.yaml
+  pull_request:
+    paths:
+      - generate_multisynset_batch.py
+      - batchcheck.py
+      - batchfetch.py
+      - .github/workflows/sense-resolution.yaml
+
+jobs:
+  sense_resolution:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download sample.sqlite artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: sample.sqlite
+      continue-on-error: true
+
+    - name: Ensure sample.sqlite exists
+      run: |
+        if [ ! -f sample.sqlite ]; then
+          echo "sample.sqlite not found, assuming it is present in the repository."
+        fi
+
+    - name: Run generate_multisynset_batch.py
+      run: |
+        ./generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
+
+    - name: Run batchcheck.py
+      run: |
+        ./batchcheck.py --database sample.sqlite --only-batch $(< .batchid.txt) --monitor
+
+    - name: Run batchfetch.py
+      run: |
+        ./batchfetch.py --database sample.sqlite --report-costs
+
+    - name: Upload modified sample.sqlite
+      uses: actions/upload-artifact@v2
+      with:
+        name: sample.sqlite
+        path: sample.sqlite
