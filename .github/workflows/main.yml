@@ -1,0 +1,36 @@
+name: Run Generate Multisynset Batch
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv .venv
+        . .venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Run generate_multisynset_batch.py
+      run: |
+        . .venv/bin/activate
+        python generate_multisynset_batch.py --database TinyStories.sqlite \
+          --congruent 3 --modulo 1000 \
+          --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
+          --batch-id-save-file .batchid.txt
