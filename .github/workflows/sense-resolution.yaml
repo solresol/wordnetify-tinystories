@@ -32,24 +32,21 @@ jobs:
     - name: Run generate_multisynset_batch.py
       continue-on-error: true
       run: |
-        python3 generate_multisynset_batch.py --database TinyStories.sqlite \
-	 --congruent 3 --modulo 1000 \
-	 --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
-	 --batch-id-save-file .batchid.txt
+        python3 generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
 
     - name: Run batchcheck.py
       continue-on-error: true
       run: |
-        python3 batchcheck.py --database TinyStories.sqlite  --only-batch $(< .batchid.txt) --monitor
+        python3 batchcheck.py --database sample.sqlite  --only-batch $(< .batchid.txt) --monitor
 
     - name: Run batchfetch.py
       continue-on-error: true
       run: |
-        python3 batchfetch.py --database TinyStories.sqlite --progress-bar --report-costs
+        python3 batchfetch.py --database sample.sqlite --report-costs
 
-    - name: Upload modified TinyStories.sqlite
+    - name: Upload modified sample.sqlite
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
-        name: TinyStories.sqlite
-        path: TinyStories.sqlite
+        name: sample.sqlite
+        path: sample.sqlite
