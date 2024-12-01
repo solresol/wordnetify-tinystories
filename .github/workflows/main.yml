@@ -21,15 +21,15 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install dependencies
+    - name: Set up environment and install dependencies
       run: |
-        python -m venv .venv
-        . .venv/bin/activate
-        pip install -r requirements.txt
+        chmod +x openai-runner.sh
+        ./openai-runner.sh
 
     - name: Run generate_multisynset_batch.py
       run: |
-        . .venv/bin/activate
+        chmod +x openai-runner.sh
+        ./openai-runner.sh
         python generate_multisynset_batch.py --database TinyStories.sqlite \
           --congruent 3 --modulo 1000 \
           --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
