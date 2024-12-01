@@ -39,10 +39,16 @@ jobs:
       run: |
         python wordnetify.py --database sample.sqlite --progress --file tests/sample.txt
 
+    - name: Dump sample database
+      run: |
+        sqlite3 sample.sqlite .dump > sample.sql
+        
     - name: Check for successful execution
-      run: echo "Wordnetify script executed successfully"
-    - name: Upload sample.sqlite as artifact
+      run: |
+        diff --report-identical-files sample.sql tests/sample.sql
+
+    - name: Upload sample.sql as artifact
       uses: actions/upload-artifact@v4
       with:
         name: sample-database
-        path: sample.sqlite
+        path: sample.sql
