@@ -81,7 +81,10 @@ def get_sentence(sentence_id):
     sentence = row[0]
     sentence_cursor.close()
     return sentence
-
+# Check if the 'sentences' table exists
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sentences';")
+if cursor.fetchone() is None:
+    sys.exit("Error: The 'sentences' table does not exist. Please run the database initialization script.")
 def get_synsets(word_id):
     synset_cursor = conn.cursor()
     # I don't know if this is necessary
