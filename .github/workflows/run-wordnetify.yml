@@ -2,7 +2,15 @@ name: Run Wordnetify
 
 on:
   push:
+    paths:
+      - .github/workflows/run-wordnetify.yml
+      - wordnetify.py
+      - tests/sample.txt
   pull_request:
+    paths:
+      - .github/workflows/run-wordnetify.yml
+      - wordnetify.py
+      - tests/sample.txt
 
 jobs:
   build:
@@ -13,12 +21,14 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        python -m pip install --upgrade pip      
+        pip install -r requirements.txt
 
     - name: Download NLTK data
       run: |
