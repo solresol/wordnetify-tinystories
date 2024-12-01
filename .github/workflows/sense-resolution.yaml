@@ -20,10 +20,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: '3.x'
 
@@ -33,7 +33,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download sample.sqlite artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: sample.sqlite
       continue-on-error: true
@@ -57,7 +57,7 @@ jobs:
         ./batchfetch.py --database sample.sqlite --report-costs
 
     - name: Upload modified sample.sqlite
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: sample.sqlite
         path: sample.sqlite
