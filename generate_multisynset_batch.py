@@ -45,7 +45,7 @@ batch_id = update_cursor.lastrowid
 if (args.congruent is not None and args.modulo is None) or (args.congruent is None and args.modulo is not None):
     sys.exit("Must specify both --congruent and --modulo or neither")
 
-query = "select distinct story_id, words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and (batch_id is null)"
+query = "select distinct words.id, sentence_id, word_number, word from words join sentences on (sentence_id = sentences.id) left join batchwords on (words.id = batchwords.word_id) left join batches on (batch_id = batches.id) where resolved_synset is null and (batch_id is null)"
 
 if args.congruent is not None and args.modulo is not None:
     query += f" and story_id % {args.modulo} = {args.congruent}"
@@ -81,7 +81,6 @@ def get_sentence(sentence_id):
     sentence = row[0]
     sentence_cursor.close()
     return sentence
-
 def get_synsets(word_id):
     synset_cursor = conn.cursor()
     # I don't know if this is necessary
@@ -223,4 +222,5 @@ conn.commit()
 if args.batch_id_save_file:
     with open(args.batch_id_save_file, 'w') as bisf:
         bisf.write(f"{batch_id}")
+conn.close()
 
