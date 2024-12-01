@@ -7,6 +7,8 @@ fi
 . .venv/bin/activate
 pip install -r requirements.txt
 
+python3 initialize_database.py --database TinyStories.sqlite
+
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
 	 --congruent 3 --modulo 1000 \
 	 --output-file .batchfiles/batch-$(date +%F-%T).jsonl --limit 40000 --progress-bar \
