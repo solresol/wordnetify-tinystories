@@ -43,7 +43,6 @@ jobs:
         if [ ! -f sample.sqlite ]; then
           echo "sample.sqlite not found, assuming it is present in the repository."
         fi
-
     - name: Run generate_multisynset_batch.py
       run: |
         ./generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
