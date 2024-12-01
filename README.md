@@ -67,7 +67,7 @@ will default to ~/.openai.key
 
 	./generate_multisynset_batch.py --database TinyStories.sqlite \
 		--congruent 3 --modulo 1000 \
-		--output-file .batchfiles/batch-$(date +%F-%T).jsonl \
+		--output-file output.jsonl \
 		--limit 40000 --progress-bar \
 		--batch-id-save-file .batchid.txt
 		
