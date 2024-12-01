@@ -10,7 +10,7 @@ import openai
 
 import sys
 parser = argparse.ArgumentParser()
-parser.add_argument("--database", required=True, help="Where the database is")
+parser.add_argument("--database", default="sample.sqlite", help="Where the database is")
 parser.add_argument("--congruent", type=int, help="Only process rows with ids that are congruent to this number")
 parser.add_argument("--modulo", type=int, help="Only process rows with ids that are congruent to --congruent modulo this number")
 parser.add_argument("--limit", type=int, help="Stop after processing this many rows")
