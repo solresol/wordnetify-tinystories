@@ -42,7 +42,7 @@ jobs:
     - name: Check for successful execution
       run: echo "Wordnetify script executed successfully"
     - name: Upload sample.sqlite as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sample-database
         path: sample.sqlite
