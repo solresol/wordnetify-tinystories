@@ -1,0 +1,2 @@
+description: |
+  Reminder: Always use @v4 for GitHub workflow actions. Versions v2 and v3 are obsolete and should not be used.
