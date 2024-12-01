@@ -15,7 +15,7 @@ parser.add_argument("--congruent", type=int, help="Only process rows with ids th
 parser.add_argument("--modulo", type=int, help="Only process rows with ids that are congruent to --congruent modulo this number")
 parser.add_argument("--limit", type=int, help="Stop after processing this many rows")
 parser.add_argument("--progress-bar", action="store_true", help="Show a progress bar")
-parser.add_argument("--output-file", required=True, help="Where to put the batch file")
+parser.add_argument("--output-file", required=True, help="Required. Specify the file path to save the batch output.")
 parser.add_argument("--dry-run", action="store_true", help="Don't send the batch to OpenAI")
 parser.add_argument("--verbose", action="store_true", help="Lots of debugging messages")
 parser.add_argument("--openai-api-key", default=os.path.expanduser("~/.openai.key"))
@@ -114,7 +114,10 @@ tools = [ { "type": "function",
         }
     ]
 
-output_file = open(args.output_file, 'w')
+try:
+    output_file = open(args.output_file, 'w')
+except IOError as e:
+    sys.exit(f"Error opening output file {args.output_file}: {e}")
 
 did_something = False
 for (story_id, word_id, sentence_id, word_number, word) in iterator:
@@ -176,7 +179,10 @@ I want to sense annotate the word `{word}` (which is word #{word_number+1}). You
             "tool_choice": {"type": "function", "function": {"name": "specify_synset"}}
         }
     }
-    output_file.write(json.dumps(batch_text) + "\n")
+    try:
+        output_file.write(json.dumps(batch_text) + "\n")
+    except IOError as e:
+        sys.exit(f"Error writing to output file {args.output_file}: {e}")
     if args.verbose:
         print(word_id, word, sentence)
     update_cursor.execute("insert into batchwords (batch_id, word_id) values (?,?)", [batch_id, word_id])
