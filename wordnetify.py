@@ -138,7 +138,7 @@ def insert_word_synset(conn, word_id, synset_id):
     INSERT OR IGNORE INTO word_synsets (word_id, synset_id) VALUES (?, ?)
     """, (word_id, synset_id))
 
-def insert_synset(conn, synset):
+def insert_synset(conn: sqlite3.Connection, synset: nltk.corpus.reader.wordnet.Synset) -> None:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT OR IGNORE INTO synsets (id, description, examples) VALUES (?, ?, ?)
@@ -164,7 +164,6 @@ def main() -> None:
         cursor.execute("delete from stories where filename = ?", [args.file])
         cursor.execute("delete from filepositions where filename = ?", [args.file])
         conn.commit()
-
     cursor.execute("select position from filepositions where filename = ?", [args.file])
     row = cursor.fetchone()
     if row is None:
