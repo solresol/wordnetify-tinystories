@@ -29,20 +29,16 @@ jobs:
 
     - name: Install dependencies
       run: |
+    - name: Install SQLite3
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Download sample.sqlite artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: sample.sqlite
-      continue-on-error: true
-
-    - name: Ensure sample.sqlite exists
+    - name: Create sample.sqlite database
       run: |
-        if [ ! -f sample.sqlite ]; then
-          echo "sample.sqlite not found, assuming it is present in the repository."
-        fi
+        sqlite3 sample.sqlite < tests/sample.sql
     - name: Run generate_multisynset_batch.py
       run: |
         ./generate_multisynset_batch.py --database sample.sqlite --batch-id-save-file .batchid.txt
