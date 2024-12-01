@@ -1,7 +1,16 @@
 #!/bin/bash
 
 cd /tinystories/wordnetify-tinystories
-. .venv/bin/activate
+if [ -d ".venv" ]; then
+    source .venv/bin/activate
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to activate the virtual environment."
+        exit 1
+    fi
+else
+    echo "Error: Virtual environment directory '.venv' does not exist."
+    exit 1
+fi
 
 python3 generate_multisynset_batch.py --database TinyStories.sqlite \
 	 --congruent 3 --modulo 1000 \
