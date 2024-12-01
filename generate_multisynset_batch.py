@@ -143,7 +143,17 @@ tools = [ { "type": "function",
         }
     ]
 
-output_file = open(args.output_file, 'w')
+output_dir = os.path.dirname(args.output_file)
+if output_dir and not os.path.exists(output_dir):
+    try:
+        os.makedirs(output_dir)
+    except OSError as e:
+        sys.exit(f"Error creating directory {output_dir}: {e}")
+
+try:
+    output_file = open(args.output_file, 'w')
+except OSError as e:
+    sys.exit(f"Error opening output file {args.output_file}: {e}")
 
 did_something = False
 for (story_id, word_id, sentence_id, word_number, word) in iterator:
