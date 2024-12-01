@@ -11,7 +11,9 @@ nltk.download('wordnet')
 nltk.download('punkt_tab')
 
 
-def read_file_in_chunks(file_path, starting_position=None, max_chunks=None):
+from typing import Optional, Iterator, Tuple
+
+def read_file_in_chunks(file_path: str, starting_position: Optional[int] = None, max_chunks: Optional[int] = None) -> Iterator[Tuple[int, str]]:
     """Read a file and yield chunks of text separated by a specific delimiter."""
     chunk = []
     chunks_delivered = 0
@@ -108,7 +110,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
     
     conn.commit()
 
-def insert_story(conn, filename, story_number):
+def insert_story(conn: sqlite3.Connection, filename: str, story_number: int) -> int:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO stories (filename, story_number) VALUES (?, ?)
@@ -141,9 +143,7 @@ def insert_synset(conn, synset):
     cursor.execute("""
     INSERT OR IGNORE INTO synsets (id, description, examples) VALUES (?, ?, ?)
     """, (synset.name(), synset.definition(), "; ".join(synset.examples())))
-
-
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Read a file in chunks separated by a delimiter and store the data in an SQLite database.")
     parser.add_argument("--file", type=str, help="The path to the file to be read.")
     parser.add_argument("--database", type=str, help="The SQLite database file.")
@@ -156,7 +156,6 @@ def main():
 
     conn = sqlite3.connect(args.database)
     create_schema(conn)
-
     cursor = conn.cursor()
     if args.restart:
         cursor.execute("delete from word_synsets where word_id in (select words.id from words join sentences on (sentence_id = sentences.id) join stories on (story_id = stories.id) where filename = ?)", [args.file])
