@@ -70,11 +70,8 @@ will default to ~/.openai.key
 		--output-file .batchfiles/batch-$(date +%F-%T).jsonl \
 		--limit 40000 --progress-bar \
 		--batch-id-save-file .batchid.txt
-		
-That will take every thousandth story (which is about what we want). The output
-file doesn't really matter, but it's nice to be able to keep them. 
-OpenAI doesn't like to have more than 40,000 records in one job. Having the
-ID of the batch is convenient.
+
+The `--output-file` argument specifies the file path where the batch output will be saved. It is necessary because it allows you to store the generated batch data, which can be useful for tracking and debugging purposes. OpenAI limits jobs to 40,000 records, so having the batch ID and output file helps manage and monitor the process efficiently.
 
 	./batchcheck.py --database TinyStories.sqlite  \
 		--only-batch $(< .batchid.txt) --monitor
