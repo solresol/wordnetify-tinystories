@@ -100,4 +100,4 @@ This stores the results back in the database.
 # Next steps
 
 Compile the ultrametric-trees programs, to convert the Tiny Stories sentences
-into a giant dataframe of wordnet paths.
+into a giant dataframe of wordnet paths, then run the 
